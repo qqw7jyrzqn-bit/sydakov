@@ -24,13 +24,10 @@ urlpatterns = [
     path('analytics/', include('analytics.urls')),
 ]
 
-# Debug Toolbar
+# Медиа файлы
 if settings.DEBUG:
-    urlpatterns += [
-        path('__debug__/', include('debug_toolbar.urls')),
-    ]
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # В режиме DEBUG Django автоматически обслуживает статику из STATICFILES_DIRS
 
 # Настройка заголовков админки
 admin.site.site_header = "Система инженера ПТО"
