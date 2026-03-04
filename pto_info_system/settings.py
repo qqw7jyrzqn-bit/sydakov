@@ -19,7 +19,37 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key-change-in-producti
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# Railway domain for deployment
+RAILWAY_DOMAIN = os.getenv('RAILWAY_STATIC_URL', '').replace('https://', '').replace('http://', '')
+
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '*'  # Разрешаем все хосты для гибкости
+]
+
+if RAILWAY_DOMAIN:
+    ALLOWED_HOSTS.append(RAILWAY_DOMAIN)
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.railway.app',
+    'https://*.up.railway.app',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://localhost:8080',
+    'http://127.0.0.1:8080',
+]
+
+if RAILWAY_DOMAIN:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{RAILWAY_DOMAIN}')
+
+# Дополнительные CSRF настройки для Railway
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = 'None'
+
+
 
 
 # Application definition
@@ -55,7 +85,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'debug_toolbar.middleware.DebugToolbarMiddleware',
+     'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'pto_info_system.urls'
