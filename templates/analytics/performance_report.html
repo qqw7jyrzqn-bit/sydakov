@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Отчёт по эффективности{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Отчёт по эффективности пользователей</h2>
+        <a href="{% url 'analytics:dashboard' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Вернуться к дашборду
+        </a>
+    </div>
+
+    <!-- Статистика пользователей -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Производительность сотрудников ПТО</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Пользователь</th>
+                            <th>Роль</th>
+                            <th>Создано скважин</th>
+                            <th>Согласовано</th>
+                            <th>Отклонено</th>
+                            <th>Процент одобрения</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user_stat in user_stats %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <strong>{{ user_stat.author__first_name }} {{ user_stat.author__last_name }}</strong>
+                                <br>
+                                <small class="text-muted">{{ user_stat.author__username }}</small>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if user_stat.author__role == 'head_pto' %}bg-danger
+                                    {% elif user_stat.author__role == 'pto_engineer' %}bg-primary
+                                    {% elif user_stat.author__role == 'ext_engineer' %}bg-info
+                                    {% else %}bg-secondary{% endif %}">
+                                    {% if user_stat.author__role == 'head_pto' %}Начальник ПТО
+                                    {% elif user_stat.author__role == 'pto_engineer' %}Инженер ПТО
+                                    {% elif user_stat.author__role == 'ext_engineer' %}Внешний эксперт
+                                    {% else %}{{ user_stat.author__role }}{% endif %}
+                                </span>
+                            </td>
+                            <td>{{ user_stat.total|default:0 }}</td>
+                            <td class="text-success">{{ user_stat.approved|default:0 }}</td>
+                            <td class="text-danger">{{ user_stat.rejected|default:0 }}</td>
+                            <td>
+                                {% if user_stat.total > 0 %}
+                                    {% widthratio user_stat.approved user_stat.total 100 %}%
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">Данные отсутствуют</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Общая статистика -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted">Всего пользователей ПТО</h5>
+                    <h2 class="mb-0">{{ user_stats|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted">Общий процент одобрения</h5>
+                    <h2 class="mb-0 text-success">
+                        {% if total_created > 0 %}
+                            {% widthratio total_approved total_created 100 %}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted">Средний коэффициент отказа</h5>
+                    <h2 class="mb-0 text-danger">
+                        {% if total_created > 0 %}
+                            {% widthratio total_rejected total_created 100 %}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

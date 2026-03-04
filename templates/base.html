@@ -1,0 +1,255 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Система инженера ПТО{% endblock %}</title>
+    
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="modern-body">
+    
+    <!-- Modern Navbar -->
+    <nav class="navbar navbar-expand-lg modern-navbar">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand modern-brand" href="{% url 'wells:home' %}">
+                <div class="brand-icon">
+                    <i class="bi bi-droplet-fill"></i>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-main">ПТО Система</span>
+                    <span class="brand-sub">Управление скважинами</span>
+                </div>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto ms-lg-4">
+                    {% if user.is_authenticated %}
+                        <!-- Меню для сотрудников ПТО -->
+                        <li class="nav-item">
+                            <a class="nav-link modern-nav-link" href="{% url 'wells:well_list' %}">
+                                <i class="bi bi-list-columns"></i>
+                                <span>Скважины</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link modern-nav-link" href="{% url 'wells:advanced_search' %}">
+                                <i class="bi bi-search"></i>
+                                <span>Поиск</span>
+                            </a>
+                        </li>
+                        {% if user.is_head_pto %}
+                        <li class="nav-item">
+                            <a class="nav-link modern-nav-link" href="{% url 'analytics:dashboard' %}">
+                                <i class="bi bi-graph-up-arrow"></i>
+                                <span>Аналитика</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link modern-nav-link" href="{% url 'documents:document_list' %}">
+                                <i class="bi bi-file-earmark-text-fill"></i>
+                                <span>Документы</span>
+                            </a>
+                        </li>
+                        
+                        <!-- Кнопка создания (только для ПТО) -->
+                        {% if user.can_create_wells %}
+                        <li class="nav-item ms-2">
+                            <a class="btn btn-create-modern" href="{% url 'wells:well_create' %}">
+                                <i class="bi bi-plus-circle-fill"></i> Создать скважину
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav ms-auto align-items-lg-center">
+                    {% if user.is_authenticated %}
+                        <!-- Уведомления -->
+                        <li class="nav-item dropdown me-2">
+                            <a class="nav-link modern-icon-link position-relative" href="#" id="notificationsDropdown" 
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-bell-fill"></i>
+                                {% if unread_notifications_count > 0 %}
+                                    <span class="notification-badge">{{ unread_notifications_count }}</span>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end modern-dropdown notifications-dropdown" aria-labelledby="notificationsDropdown">
+                                <li class="dropdown-header-modern">
+                                    <h6 class="mb-0"><i class="bi bi-bell"></i> Уведомления</h6>
+                                </li>
+                                <li><hr class="dropdown-divider m-0"></li>
+                                {% if unread_notifications %}
+                                    {% for notification in unread_notifications %}
+                                        <li>
+                                            <a class="dropdown-item modern-dropdown-item" href="#" 
+                                               data-notification-id="{{ notification.id }}">
+                                                <div class="notification-time">
+                                                    <i class="bi bi-clock"></i>
+                                                    {{ notification.created_at|date:"d.m.Y H:i" }}
+                                                </div>
+                                                <div class="notification-text">
+                                                    {{ notification.text|truncatewords:15 }}
+                                                </div>
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item modern-dropdown-item text-center fw-semibold" href="{% url 'notifications:notification_list' %}">
+                                            <i class="bi bi-list-ul"></i> Все уведомления
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="dropdown-item-text text-center text-muted py-3">
+                                        <i class="bi bi-check-circle"></i> Нет новых уведомлений
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                        
+                        <!-- Пользователь -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link modern-user-link dropdown-toggle" href="#" id="userDropdown" 
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="user-avatar">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <span class="user-name d-none d-lg-inline">{{ user.get_full_name|default:user.username }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end modern-dropdown" aria-labelledby="userDropdown">
+                                <li class="dropdown-header-modern">
+                                    <div class="user-info">
+                                        <div class="user-info-avatar">
+                                            <i class="bi bi-person-circle"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">{{ user.get_full_name|default:user.username }}</div>
+                                            <small class="text-muted">{{ user.get_role_display }}</small>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item modern-dropdown-item" href="{% url 'accounts:profile' %}">
+                                        <i class="bi bi-person"></i> Профиль
+                                    </a>
+                                </li>
+                                {% if user.is_staff %}
+                                    <li>
+                                        <a class="dropdown-item modern-dropdown-item" href="{% url 'admin:index' %}">
+                                            <i class="bi bi-gear-fill"></i> Админка
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item modern-dropdown-item text-danger" href="{% url 'logout' %}">
+                                        <i class="bi bi-box-arrow-right"></i> Выход
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="btn btn-login-modern" href="{% url 'login' %}">
+                                <i class="bi bi-box-arrow-in-right"></i> Вход
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content with modern wrapper -->
+    <main class="main-content">
+        <div class="container-fluid px-4 py-4">
+            <!-- Messages with modern styling -->
+            {% if messages %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        {% for message in messages %}
+                            <div class="alert modern-alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                <div class="alert-icon">
+                                    {% if message.tags == 'success' %}
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    {% elif message.tags == 'danger' or message.tags == 'error' %}
+                                        <i class="bi bi-exclamation-circle-fill"></i>
+                                    {% elif message.tags == 'warning' %}
+                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                    {% else %}
+                                        <i class="bi bi-info-circle-fill"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="alert-content">
+                                    {{ message }}
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    
+    <!-- Modern Footer -->
+    <footer class="modern-footer">
+        <div class="container-fluid px-4">
+            <div class="row align-items-center py-3">
+                <div class="col-lg-4 col-md-12 text-center text-lg-start mb-3 mb-lg-0">
+                    <div class="footer-brand-inline">
+                        <i class="bi bi-droplet-fill"></i>
+                        <span class="brand-text">ПТО Система</span>
+                        <span class="separator">|</span>
+                        <span class="location">
+                            <i class="bi bi-geo-alt"></i> г. Лениногорск
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-12 text-center mb-3 mb-lg-0">
+                    <div class="footer-links-inline">
+                        <a href="/">Главная</a>
+                        <a href="/wells/">Скважины</a>
+                        <a href="/documents/">Документы</a>
+                        <a href="/analytics/">Аналитика</a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-12 text-center text-lg-end">
+                    <div class="footer-copyright">
+                        © 2026 ПТО Система
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Chat Widget -->
+    {% if user.is_authenticated %}
+        {% include 'includes/chat_widget.html' %}
+    {% endif %}
+    
+    <!-- Bootstrap 5.3 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{% static 'js/toasts.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

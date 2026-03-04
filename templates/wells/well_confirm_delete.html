@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить скважину{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h3><i class="bi bi-exclamation-triangle"></i> Подтверждение удаления</h3>
+            </div>
+            <div class="card-body">
+                <p>Вы уверены, что хотите удалить скважину <strong>{{ object.name }}</strong>?</p>
+                <p class="text-muted">Это действие нельзя отменить.</p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Удалить
+                    </button>
+                    <a href="{% url 'wells:well_detail' object.pk %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Отмена
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

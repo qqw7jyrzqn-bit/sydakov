@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ well.name }} - Детали{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <a href="{% url 'wells:well_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Назад к списку
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Основная информация -->
+    <div class="col-md-8">
+        <div class="card well-card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    <i class="bi bi-geo-alt"></i> {{ well.name }}
+                    <span class="badge bg-{{ well.get_status_badge_class }} float-end">
+                        {{ well.get_status_display }}
+                    </span>
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong><i class="bi bi-map"></i> Месторождение:</strong> {{ well.field }}</p>
+                        <p><strong><i class="bi bi-compass"></i> Координаты:</strong> {{ well.coordinates|default:"Не указаны" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong><i class="bi bi-arrow-down-circle"></i> Глубина:</strong> {{ well.depth }} м</p>
+                        <p><strong><i class="bi bi-person"></i> Автор:</strong> {{ well.author.get_full_name|default:well.author.username }}</p>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong><i class="bi bi-calendar-plus"></i> Создана:</strong> {{ well.created_at|date:"d.m.Y H:i" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong><i class="bi bi-calendar-check"></i> Обновлена:</strong> {{ well.updated_at|date:"d.m.Y H:i" }}</p>
+                    </div>
+                </div>
+                
+                {% if well.description %}
+                    <div class="row">
+                        <div class="col-12">
+                            <p><strong><i class="bi bi-info-circle"></i> Описание:</strong></p>
+                            <p class="text-muted">{{ well.description }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Timeline согласований -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> История согласований</h5>
+            </div>
+            <div class="card-body">
+                {% if approval_steps %}
+                    <ul class="timeline">
+                        {% for step in approval_steps %}
+                            <li class="timeline-item">
+                                <div class="timeline-icon">
+                                    {% if step.status == 'approved' %}
+                                        <i class="bi bi-check-lg"></i>
+                                    {% elif step.status == 'rejected' %}
+                                        <i class="bi bi-x-lg"></i>
+                                    {% else %}
+                                        <i class="bi bi-clock"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="timeline-content">
+                                    <h5>
+                                        {{ step.user.get_full_name|default:step.user.username }}
+                                        <span class="badge bg-{{ step.status }} float-end">
+                                            {{ step.get_status_display }}
+                                        </span>
+                                    </h5>
+                                    <p class="text-muted mb-1">{{ step.timestamp|date:"d.m.Y H:i" }}</p>
+                                    {% if step.comment %}
+                                        <p class="mb-0"><strong>Комментарий:</strong> {{ step.comment }}</p>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted text-center py-3">Согласований пока нет</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Панель действий -->
+    <div class="col-md-4">
+        <div class="card mb-3" style="position: relative; z-index: 100;">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Действия</h5>
+            </div>
+            <div class="card-body action-buttons" style="overflow: visible;">
+                {% if user.can_edit_wells %}
+                    {% if well.status == 'draft' %}
+                        <a href="{% url 'wells:well_update' well.pk %}" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </a>
+                        <form method="post" action="{% url 'wells:well_send_approval' well.pk %}" class="d-inline w-100">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-info w-100 mb-2">
+                                <i class="bi bi-send"></i> Отправить на согласование
+                            </button>
+                        </form>
+                        <form method="post" action="{% url 'wells:well_delete' well.pk %}" 
+                              onsubmit="return confirm('Вы уверены?')" class="d-inline w-100">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger w-100 mb-2">
+                                <i class="bi bi-trash"></i> Удалить
+                            </button>
+                        </form>
+                    {% elif well.status == 'rejected' %}
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Скважина отклонена. Внесите исправления и отправьте повторно.
+                        </div>
+                        <a href="{% url 'wells:well_update' well.pk %}" class="btn btn-warning w-100 mb-2">
+                            <i class="bi bi-pencil"></i> Исправить
+                        </a>
+                        <form method="post" action="{% url 'wells:well_send_approval' well.pk %}" class="d-inline w-100">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-info w-100 mb-2">
+                                <i class="bi bi-arrow-repeat"></i> Отправить повторно
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+                
+                {% if user.is_head_pto and well.status == 'submitted' %}
+                    <form method="post" action="{% url 'wells:well_approve' well.pk %}">
+                        {% csrf_token %}
+                        <div class="mb-2">
+                            <label for="comment" class="form-label">Комментарий:</label>
+                            <textarea name="comment" id="comment" class="form-control" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 mb-2">
+                            <i class="bi bi-check-circle"></i> Согласовать
+                        </button>
+                    </form>
+                    
+                    <!-- Кнопка отказа в согласовании -->
+                    <button type="button" class="btn btn-danger w-100 mb-2" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                        <i class="bi bi-x-circle"></i> Отказать в согласовании
+                    </button>
+                {% endif %}
+                
+                <!-- Изменение статусов (только для начальника ПТО) -->
+                {% if user.is_head_pto %}
+                    {% if well.status == 'approved_head' %}
+                        <form method="post" action="{% url 'wells:well_change_status' well.pk %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="new_status" value="approved">
+                            <button type="submit" class="btn btn-success w-100 mb-2">
+                                <i class="bi bi-check2-all"></i> Утвердить окончательно
+                            </button>
+                        </form>
+                    {% elif well.status == 'approved' %}
+                        <form method="post" action="{% url 'wells:well_change_status' well.pk %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="new_status" value="in_work">
+                            <button type="submit" class="btn btn-warning w-100 mb-2">
+                                <i class="bi bi-play-circle"></i> Начать работы
+                            </button>
+                        </form>
+                    {% elif well.status == 'in_work' %}
+                        <form method="post" action="{% url 'wells:well_change_status' well.pk %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="new_status" value="drilling_completed">
+                            <button type="submit" class="btn btn-success w-100 mb-2">
+                                <i class="bi bi-check-circle"></i> Завершить бурение
+                            </button>
+                        </form>
+                    {% elif well.status == 'drilling_completed' %}
+                        <form method="post" action="{% url 'wells:well_change_status' well.pk %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="new_status" value="archived">
+                            <button type="submit" class="btn btn-secondary w-100 mb-2">
+                                <i class="bi bi-archive"></i> В архив
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+                
+                <!-- Генерация/скачивание документов -->
+                <div class="dropdown mb-2" style="position: relative; z-index: 1050;">
+                    <button class="btn btn-warning w-100 dropdown-toggle" type="button" id="generateDocsDropdown" 
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-file-earmark-word"></i> {% if can_generate_docs %}Сформировать{% else %}Скачать{% endif %} документ
+                    </button>
+                    <ul class="dropdown-menu w-100" aria-labelledby="generateDocsDropdown" style="z-index: 1051;">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'documents:generate_report' well.pk %}?type=report">
+                                <i class="bi bi-file-earmark-text"></i> Отчёт по скважине
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'documents:generate_report' well.pk %}?type=technical_spec">
+                                <i class="bi bi-file-earmark-code"></i> Техническое задание
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'documents:generate_report' well.pk %}?type=protocol">
+                                <i class="bi bi-file-earmark-check"></i> Протокол испытаний
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'documents:generate_report' well.pk %}?type=geology_report">
+                                <i class="bi bi-layers"></i> Геологический отчёт
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'documents:generate_report' well.pk %}?type=drilling_program">
+                                <i class="bi bi-gear"></i> Программа бурения
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'documents:generate_report' well.pk %}?type=completion_report">
+                                <i class="bi bi-clipboard-check"></i> Акт завершения
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'documents:generate_report' well.pk %}?type=safety_plan">
+                                <i class="bi bi-shield-check"></i> План по безопасности
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Связанные документы -->
+        <div class="card" style="position: relative; z-index: 1;">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-files"></i> Документы</h5>
+            </div>
+            <div class="card-body">
+                {% if well.documents.all %}
+                    <ul class="list-group list-group-flush">
+                        {% for doc in well.documents.all %}
+                            <li class="list-group-item">
+                                <i class="bi bi-file-earmark-text"></i> {{ doc.title }}
+                                <a href="{% url 'documents:document_download' doc.pk %}" 
+                                   class="btn btn-sm btn-primary float-end">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted text-center py-2">Документов нет</p>
+                {% endif %}
+                <a href="{% url 'documents:document_create' %}?well={{ well.pk }}" 
+                   class="btn btn-primary w-100 mt-2">
+                    <i class="bi bi-plus-circle"></i> Добавить документ
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для отказа в согласовании -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="rejectModalLabel">
+                    <i class="bi bi-x-circle"></i> Отказ в согласовании
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'wells:well_reject' well.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> 
+                        Вы собираетесь отклонить скважину <strong>{{ well.name }}</strong>. 
+                        Укажите причину отказа.
+                    </div>
+                    <div class="mb-3">
+                        <label for="reject_reason" class="form-label">Причина отказа <span class="text-danger">*</span></label>
+                        <textarea name="reason" id="reject_reason" class="form-control" rows="4" 
+                                  placeholder="Укажите причину отказа в согласовании" required></textarea>
+                        <small class="form-text text-muted">Это поле обязательно для заполнения</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-arrow-left"></i> Отмена
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle"></i> Отклонить скважину
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

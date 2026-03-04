@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Аналитика - Система ПТО{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        border-left: 4px solid #0d6efd;
+        transition: transform 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #0d6efd;
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="bi bi-graph-up"></i> Аналитика и статистика</h2>
+            <p class="text-muted">Сводная информация по проектам скважин</p>
+        </div>
+    </div>
+    
+    <!-- Основные показатели -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h6 class="text-muted">Всего скважин</h6>
+                    <div class="stat-number">{{ total_wells }}</div>
+                    <small class="text-muted">Проектов в системе</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card" style="border-left-color: #198754;">
+                <div class="card-body">
+                    <h6 class="text-muted">В работе</h6>
+                    <div class="stat-number" style="color: #198754;">{{ active_wells }}</div>
+                    <small class="text-muted">Активные проекты</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card" style="border-left-color: #20c997;">
+                <div class="card-body">
+                    <h6 class="text-muted">Завершено</h6>
+                    <div class="stat-number" style="color: #20c997;">{{ completed_wells }}</div>
+                    <small class="text-muted">Успешно завершённые</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card" style="border-left-color: #ffc107;">
+                <div class="card-body">
+                    <h6 class="text-muted">На согласовании</h6>
+                    <div class="stat-number" style="color: #ffc107;">{{ pending_approval }}</div>
+                    <small class="text-muted">Ожидают решения</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Графики -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-bar-chart"></i> Динамика создания скважин</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="wellsTimelineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-pie-chart"></i> Распределение по статусам</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="statusDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-geo-alt"></i> Топ месторождений</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 400px;">
+                        <canvas id="fieldsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5><i class="bi bi-award"></i> Топ авторов</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for author in top_authors %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="bi bi-person-circle"></i>
+                                {{ author.author__first_name }} {{ author.author__last_name|default:author.author__username }}
+                            </span>
+                            <span class="badge bg-primary rounded-pill">{{ author.count }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-info-circle"></i> Дополнительно</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Средняя глубина:</strong> {{ avg_depth }} м</p>
+                    <p><strong>Всего документов:</strong> {{ total_documents }}</p>
+                    <hr>
+                    <a href="{% url 'analytics:performance_report' %}" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-speedometer"></i> Отчёт по эффективности
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Динамика создания скважин
+const timelineCtx = document.getElementById('wellsTimelineChart').getContext('2d');
+new Chart(timelineCtx, {
+    type: 'line',
+    data: {
+        labels: {{ months_labels|safe }},
+        datasets: [{
+            label: 'Создано скважин',
+            data: {{ months_data|safe }},
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+
+// Распределение по статусам
+const statusCtx = document.getElementById('statusDistributionChart').getContext('2d');
+new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ status_labels|safe }},
+        datasets: [{
+            data: {{ status_data|safe }},
+            backgroundColor: [
+                '#0d6efd', '#198754', '#ffc107', '#dc3545', 
+                '#20c997', '#6c757d', '#fd7e14', '#d63384'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right'
+            }
+        }
+    }
+});
+
+// Топ месторождений
+const fieldsCtx = document.getElementById('fieldsChart').getContext('2d');
+new Chart(fieldsCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ fields_labels|safe }},
+        datasets: [{
+            label: 'Количество скважин',
+            data: {{ fields_data|safe }},
+            backgroundColor: '#0d6efd'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

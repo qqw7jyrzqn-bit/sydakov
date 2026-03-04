@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Уведомления{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="mb-0"><i class="bi bi-bell"></i> Уведомления</h3>
+                {% if notifications %}
+                    <button onclick="markAllAsRead()" class="btn btn-sm btn-primary">
+                        <i class="bi bi-check-all"></i> Прочитать все
+                    </button>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                {% if notifications %}
+                    <div class="list-group list-group-flush">
+                        {% for notification in notifications %}
+                            <div class="list-group-item {% if not notification.read %}notification-unread{% endif %}">
+                                <div class="d-flex justify-content-between">
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex align-items-start">
+                                            {% if not notification.read %}
+                                                <i class="bi bi-dot text-primary me-2" style="font-size: 2rem; line-height: 1;"></i>
+                                            {% endif %}
+                                            <div>
+                                                <p class="mb-1">{{ notification.text }}</p>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-clock"></i> {{ notification.created_at|date:"d.m.Y H:i" }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        {% if not notification.read %}
+                                            <button onclick="markNotificationAsRead({{ notification.id }})" 
+                                                    class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-check"></i>
+                                            </button>
+                                        {% else %}
+                                            <span class="text-success">
+                                                <i class="bi bi-check-circle"></i>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-bell-slash" style="font-size: 3rem; color: #ccc;"></i>
+                        <p class="text-muted mt-3">Уведомлений нет</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

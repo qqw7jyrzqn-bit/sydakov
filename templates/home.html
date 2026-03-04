@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная - Система ПТО{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <!-- Hero секция -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="hero-section text-center p-5" style="background: linear-gradient(135deg, rgba(144, 164, 174, 0.1) 0%, rgba(120, 144, 156, 0.05) 100%); border-radius: 20px; border: 1px solid rgba(144, 164, 174, 0.2);">
+                <div class="mb-4">
+                    <i class="bi bi-droplet-fill" style="font-size: 4rem; color: var(--accent-gray);"></i>
+                </div>
+                <h1 class="display-4 mb-3" style="color: var(--accent-gray); font-weight: 700;">
+                    Система управления скважинами ПТО
+                </h1>
+                <p class="lead text-secondary mb-4" style="max-width: 800px; margin: 0 auto;">
+                    Комплексная информационная система для производственно-технического отдела по управлению, мониторингу и аналитике нефтяных скважин
+                </p>
+                {% if user.is_authenticated %}
+                    <div class="d-flex gap-3 justify-content-center mt-4">
+                        <a href="{% url 'wells:well_list' %}" class="btn btn-create-modern btn-lg">
+                            <i class="bi bi-list-columns"></i>
+                            <span>Перейти к скважинам</span>
+                        </a>
+                        {% if user.is_head_pto %}
+                        <a href="{% url 'analytics:dashboard' %}" class="btn btn-login-modern btn-lg">
+                            <i class="bi bi-graph-up-arrow"></i>
+                            <span>Аналитика</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-create-modern btn-lg mt-4">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <span>Войти в систему</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Основные возможности -->
+    <div class="row mb-5">
+        <div class="col-12 mb-4">
+            <h2 class="text-center mb-4" style="color: var(--accent-gray); font-weight: 600;">
+                Основные возможности системы
+            </h2>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="feature-card p-4 h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; transition: all 0.3s;">
+                <div class="feature-icon mb-3" style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--accent-gray), var(--accent-medium)); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-database-fill-gear" style="font-size: 1.8rem; color: var(--dark-primary);"></i>
+                </div>
+                <h4 class="mb-3" style="color: var(--accent-gray); font-weight: 600;">Управление скважинами</h4>
+                <p class="text-secondary mb-0" style="font-size: 0.95rem;">
+                    Полный цикл управления данными о скважинах: создание, редактирование, мониторинг статусов и параметров бурения
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="feature-card p-4 h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; transition: all 0.3s;">
+                <div class="feature-icon mb-3" style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--accent-gray), var(--accent-medium)); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-diagram-3-fill" style="font-size: 1.8rem; color: var(--dark-primary);"></i>
+                </div>
+                <h4 class="mb-3" style="color: var(--accent-gray); font-weight: 600;">Согласование проектов</h4>
+                <p class="text-secondary mb-0" style="font-size: 0.95rem;">
+                    Многоступенчатая система согласования с отслеживанием статусов, комментариями и историей изменений
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="feature-card p-4 h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; transition: all 0.3s;">
+                <div class="feature-icon mb-3" style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--accent-gray), var(--accent-medium)); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-graph-up-arrow" style="font-size: 1.8rem; color: var(--dark-primary);"></i>
+                </div>
+                <h4 class="mb-3" style="color: var(--accent-gray); font-weight: 600;">Аналитика и отчеты</h4>
+                <p class="text-secondary mb-0" style="font-size: 0.95rem;">
+                    Визуализация данных, графики производительности, отчёты по месторождениям и экспорт в Excel
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="feature-card p-4 h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; transition: all 0.3s;">
+                <div class="feature-icon mb-3" style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--accent-gray), var(--accent-medium)); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-file-earmark-text-fill" style="font-size: 1.8rem; color: var(--dark-primary);"></i>
+                </div>
+                <h4 class="mb-3" style="color: var(--accent-gray); font-weight: 600;">Документооборот</h4>
+                <p class="text-secondary mb-0" style="font-size: 0.95rem;">
+                    Централизованное хранение и управление проектной и технической документацией с контролем версий
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Функциональные модули -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="p-5" style="background: linear-gradient(135deg, rgba(144, 164, 174, 0.08) 0%, rgba(120, 144, 156, 0.04) 100%); border-radius: 20px; border: 1px solid rgba(144, 164, 174, 0.15);">
+                <h2 class="text-center mb-5" style="color: var(--accent-gray); font-weight: 600;">
+                    Функциональные модули
+                </h2>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="d-flex gap-3 align-items-start">
+                            <div class="flex-shrink-0">
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--accent-gray), var(--accent-medium)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-search" style="font-size: 1.3rem; color: var(--dark-primary);"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 style="color: var(--accent-gray); font-weight: 600;">Расширенный поиск</h5>
+                                <p class="text-secondary mb-0" style="font-size: 0.9rem;">
+                                    Многокритериальный поиск по всем параметрам скважин: месторождение, статус, глубина, даты бурения и другие характеристики
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="d-flex gap-3 align-items-start">
+                            <div class="flex-shrink-0">
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--accent-gray), var(--accent-medium)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-bell-fill" style="font-size: 1.3rem; color: var(--dark-primary);"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 style="color: var(--accent-gray); font-weight: 600;">Система уведомлений</h5>
+                                <p class="text-secondary mb-0" style="font-size: 0.9rem;">
+                                    Автоматические уведомления о важных событиях: изменение статусов, запросы на согласование, комментарии
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="d-flex gap-3 align-items-start">
+                            <div class="flex-shrink-0">
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--accent-gray), var(--accent-medium)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-shield-lock-fill" style="font-size: 1.3rem; color: var(--dark-primary);"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 style="color: var(--accent-gray); font-weight: 600;">Ролевая модель доступа</h5>
+                                <p class="text-secondary mb-0" style="font-size: 0.9rem;">
+                                    Гибкая система прав: инженер ПТО и начальник ПТО
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="d-flex gap-3 align-items-start">
+                            <div class="flex-shrink-0">
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--accent-gray), var(--accent-medium)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-chat-dots-fill" style="font-size: 1.3rem; color: var(--dark-primary);"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 style="color: var(--accent-gray); font-weight: 600;">Встроенный мессенджер</h5>
+                                <p class="text-secondary mb-0" style="font-size: 0.9rem;">
+                                    Обмен сообщениями между сотрудниками прямо в системе для оперативного решения вопросов
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика системы -->
+    {% if user.is_authenticated %}
+    <div class="row">
+        <div class="col-12">
+            <h2 class="text-center mb-4" style="color: var(--accent-gray); font-weight: 600;">
+                Статистика системы
+            </h2>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="stats-card text-center p-4" style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px;">
+                <div class="stats-icon mb-3" style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--accent-gray), var(--accent-medium)); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                    <i class="bi bi-droplet-fill" style="font-size: 2rem; color: var(--dark-primary);"></i>
+                </div>
+                <h3 class="mb-2" style="color: var(--accent-gray); font-weight: 700;">{{ total_wells }}</h3>
+                <p class="text-secondary mb-0">Всего скважин</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="stats-card text-center p-4" style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px;">
+                <div class="stats-icon mb-3" style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--accent-gray), var(--accent-medium)); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                    <i class="bi bi-gear-fill" style="font-size: 2rem; color: var(--dark-primary);"></i>
+                </div>
+                <h3 class="mb-2" style="color: var(--accent-gray); font-weight: 700;">{{ active_wells }}</h3>
+                <p class="text-secondary mb-0">В работе</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="stats-card text-center p-4" style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px;">
+                <div class="stats-icon mb-3" style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--accent-gray), var(--accent-medium)); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                    <i class="bi bi-file-earmark-text-fill" style="font-size: 2rem; color: var(--dark-primary);"></i>
+                </div>
+                <h3 class="mb-2" style="color: var(--accent-gray); font-weight: 700;">{{ total_documents }}</h3>
+                <p class="text-secondary mb-0">Документов</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="stats-card text-center p-4" style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px;">
+                <div class="stats-icon mb-3" style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--accent-gray), var(--accent-medium)); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                    <i class="bi bi-people-fill" style="font-size: 2rem; color: var(--dark-primary);"></i>
+                </div>
+                <h3 class="mb-2" style="color: var(--accent-gray); font-weight: 700;">{{ total_users }}</h3>
+                <p class="text-secondary mb-0">Пользователей</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(144, 164, 174, 0.2);
+    border-color: rgba(144, 164, 174, 0.3) !important;
+}
+
+.stats-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(144, 164, 174, 0.2);
+    border-color: rgba(144, 164, 174, 0.3) !important;
+}
+
+.hero-section {
+    transition: all 0.3s;
+}
+
+.hero-section:hover {
+    box-shadow: 0 8px 32px rgba(144, 164, 174, 0.15);
+}
+</style>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Вход в систему{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-lg">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-building" style="font-size: 3rem; color: var(--oil-blue);"></i>
+                    <h3 class="mt-3">Система ПТО</h3>
+                    <p class="text-muted">Вход в систему</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            <i class="bi bi-person"></i> Имя пользователя
+                        </label>
+                        <input type="text" class="form-control" id="{{ form.username.id_for_label }}" 
+                               name="{{ form.username.name }}" required autofocus>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">
+                            <i class="bi bi-lock"></i> Пароль
+                        </label>
+                        <input type="password" class="form-control" id="{{ form.password.id_for_label }}" 
+                               name="{{ form.password.name }}" required>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right"></i> Войти
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="mt-4 p-3 demo-accounts-block">
+                    <p class="mb-1 small"><strong>Демо-учётные записи:</strong></p>
+                    <p class="mb-0 small">
+                        <strong>Инженер ПТО:</strong> pto_engineer / 1234<br>
+                        <strong>Начальник ПТО:</strong> head_pto / 1234
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
