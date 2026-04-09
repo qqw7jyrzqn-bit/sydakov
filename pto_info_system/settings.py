@@ -174,11 +174,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# В режиме разработки добавляем локальные статические файлы
-if DEBUG:
-    STATICFILES_DIRS = [
-        BASE_DIR / 'static',
-    ]
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 # WhiteNoise для production - используем простое хранилище без манифеста
 if not DEBUG:
