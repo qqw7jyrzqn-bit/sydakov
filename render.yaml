@@ -3,7 +3,7 @@ services:
     name: pto-info-system
     env: python
     plan: free
-    buildCommand: "./build.sh"
+    buildCommand: "bash build.sh"
     startCommand: "gunicorn pto_info_system.wsgi:application"
     envVars:
       - key: SECRET_KEY
