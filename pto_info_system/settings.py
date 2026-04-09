@@ -19,19 +19,28 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key-change-in-producti
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-# Railway domain for deployment
+# Render domain for deployment
+RENDER_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME', '')
+
+# Railway domain for deployment (legacy)
 RAILWAY_DOMAIN = os.getenv('RAILWAY_STATIC_URL', '').replace('https://', '').replace('http://', '')
 
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '*'  # Разрешаем все хосты для гибкости
 ]
+
+if RENDER_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_HOSTNAME)
 
 if RAILWAY_DOMAIN:
     ALLOWED_HOSTS.append(RAILWAY_DOMAIN)
 
+if DEBUG:
+    ALLOWED_HOSTS.append('*')
+
 CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
     'https://*.railway.app',
     'https://*.up.railway.app',
     'http://localhost:8000',
@@ -40,14 +49,17 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8080',
 ]
 
+if RENDER_HOSTNAME:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_HOSTNAME}')
+
 if RAILWAY_DOMAIN:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RAILWAY_DOMAIN}')
 
-# Дополнительные CSRF настройки для Railway
-CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_SAMESITE = 'None'
+# Cookie security — только для production (HTTPS)
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
+SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
 
 
 
